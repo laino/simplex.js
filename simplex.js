@@ -66,7 +66,7 @@ class Simplex {
                 // unbounded
                 return {
                     max: Infinity,
-                    c: null
+                    co: null
                 };
             }
 
