@@ -4,6 +4,10 @@ class Simplex {
     }
 
     addUpperConstraint(bound, ... x) {
+        if (bound < 0) {
+            return this.addLowerConstraint(-bound, x);
+        }
+
         this.constraints.push([
             bound,
             ... x.map(x => -x)
@@ -11,6 +15,10 @@ class Simplex {
     }
 
     addLowerConstraint(bound, ... x) {
+        if (bound < 0) {
+            return this.addUpperConstraint(-bound, x);
+        }
+
         this.constraints.push([
             bound,
             ... x
@@ -59,15 +67,13 @@ class Simplex {
             for (let i = 0; i < constraints.length; i++) {
                 const row = system[i];
 
-                if (row[c] >= 0) {
-                    continue;
-                }
+                if (row[c] < 0) {
+                    const strictness = -row[1] / row[c];
 
-                const strictness = -row[1] / row[c];
-
-                if (strictness < strictest) {
-                    strictest = strictness;
-                    r = i;
+                    if (strictness < strictest) {
+                        strictest = strictness;
+                        r = i;
+                    }
                 }
             }
 
@@ -123,12 +129,4 @@ class Simplex {
     }
 }
 
-const s = new Simplex();
-
-s.addUpperConstraint(5, 2, 1);
-s.addUpperConstraint(4, 1, 2);
-
-s.addUpperConstraint(0, 1, -1);
-s.addLowerConstraint(0, 1, -1);
-
-console.log(s.maximum(1, 1));
+module.exports = Simplex;
