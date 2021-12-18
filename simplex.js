@@ -73,13 +73,16 @@ class Simplex {
 
             const row = system[r];
 
-            for (let i = 2; i < row.length; i++) {
-                row[i] /= row[c];
-            }
+            const m = row[c];
 
+            row[row[0]] = -1;
             row[0] = c;
             row[c] = 0;
             row[1] = strictest;
+
+            for (let i = 2; i < row.length; i++) {
+                row[i] /= -m;
+            }
 
             for (let i = 0; i < system.length; i++) {
                 const subRow = system[i];
@@ -109,6 +112,6 @@ class Simplex {
 
 const s = new Simplex();
 
-s.addUpperConstraint(5, -1, -1);
+s.addUpperConstraint(5, 2, 1);
 
 console.log(s.maximum(1, 1));
