@@ -4,23 +4,12 @@ class Simplex {
     }
 
     addUpperConstraint(bound, ... x) {
-        if (bound < 0) {
-            return this.addLowerConstraint(-bound, x);
-        }
-
-        this.constraints.push([
-            bound,
-            ... x.map(x => -x)
-        ]);
+        this.addLowerConstraint(-bound, ... x.map(x => -x));
     }
 
     addLowerConstraint(bound, ... x) {
-        if (bound < 0) {
-            return this.addUpperConstraint(-bound, x);
-        }
-
         this.constraints.push([
-            bound,
+            -bound,
             ... x
         ]);
     }
@@ -85,6 +74,9 @@ class Simplex {
                 };
             }
 
+            console.log(c, r);
+            console.log(system);
+
             const row = system[r];
 
             const m = row[c];
@@ -106,6 +98,9 @@ class Simplex {
                 }
                 subRow[c] = 0;
             }
+
+            console.log(system);
+
         }
 
         const co = Array(objective.length).fill(0);
