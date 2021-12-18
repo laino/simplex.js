@@ -30,6 +30,15 @@ class Simplex {
 
         system.push([0, 0, ... objective, ... pad])
 
+        for (let i = 0; i < objective.length; i++) {
+            if (objective[i] < 0) {
+                for (let k = 0; k < system.length; k++) {
+                    const row = system[k];
+                    row[i + 2] *= -1;
+                }
+            }
+        }
+
         while (true) {
             const obj = system[system.length - 1];
 
@@ -97,8 +106,13 @@ class Simplex {
 
         for (let i = 0; i < system.length - 1; i++) {
             const row = system[i];
-            if (row[0] - 2 < objective.length) {
-                co[row[0] - 2] = row[1];
+            const k = row[0] - 2;
+            if (k < objective.length) {
+                co[k] = row[1];
+
+                if (objective[k] < 0) {
+                    co[k] *= -1;
+                }
             }
         }
 
