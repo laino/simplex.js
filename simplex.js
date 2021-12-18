@@ -113,5 +113,6 @@ class Simplex {
 const s = new Simplex();
 
 s.addUpperConstraint(5, 2, 1);
+s.addUpperConstraint(4, 1, 2);
 
 console.log(s.maximum(1, 1));
