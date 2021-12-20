@@ -60,15 +60,31 @@ class Simplex {
         this.LFSRows++;
     }
 
+    addRangeConstraint(lower, upper, ... coefficients) {
+        this.addLowerConstraint(lower, ... coefficients);
+        this.addUpperConstraint(upper, ... coefficients);
+    }
+
     addEqualConstraint(bound, ... coefficients) {
         this.setVariableCount(coefficients.length);
 
         if (bound < 0) {
-            coefficients = coefficients.map(x => -x);
-            bound *= -1;
+            this._addEqualConstraint(-bound, ... coefficients.map(x => -x));
+            return;
         }
 
+        if (bound === 0) {
+            this._addEqualConstraint(0, ... coefficients);
+            this._addEqualConstraint(0, ... coefficients.map(x => -x));
+            return;
+        }
+
+        this._addEqualConstraint(bound, ... coefficients);
+    }
+
+    _addEqualConstraint(bound, ... coefficients) {
         this.LFSColumns++;
+        this.artificials++;
 
         const row = new Float64Array(this.LFSColumns);
 
@@ -78,8 +94,6 @@ class Simplex {
         this._setVariables(row, coefficients);
 
         this.constraints.push(row);
-
-        this.artificials++;
         this.LFSRows++;
     }
 
@@ -138,7 +152,7 @@ class Simplex {
                 const row = system[i];
                 const column = row[0];
 
-                if (column < LFSColumns - artificials) {
+                if (column < LFSColumns - artificials || row[1] === 0) {
                     continue;
                 }
 
@@ -176,6 +190,7 @@ class Simplex {
             }
 
             this._pivot(system, r, c, LFSRows + 1, sLFSColumns);
+
         }
 
         const result = new Float64Array(variables);
@@ -184,7 +199,7 @@ class Simplex {
             const row = system[i];
             const k = row[0] - 2;
 
-            if (k < variables * 2) {
+            if (k >= 0 && k < variables * 2) {
                 result[Math.floor(k / 2)] += row[1] * (1 - k % 2 * 2);
             }
         }
@@ -207,23 +222,21 @@ class Simplex {
 
         const objective = system[objectiveRow];
 
-        while (Math.abs(objective[1]) > FLOAT_ERROR) {
+        while (true) {
             const {r, c} = this._pickPivot(system, LFSRows, LFSColumns, LFSRows + 1);
 
-            if (c < 0 || r < 0) {
+            if (c < 0) {
+                break;
+            }
+
+            if (r < 0) {
                 return false;
             }
 
             this._pivot(system, r, c, LFSRows + 2, LFSColumns);
-
-            for (let i = LFSColumns - artificials; i < LFSColumns; i++) {
-                if (objective[i] > FLOAT_ERROR) {
-                    return false;
-                }
-            }
         }
 
-        return true;
+        return Math.abs(objective[1]) < FLOAT_ERROR;
     }
 
     _pickPivot(system, maxRows, maxColumns, objectiveRow) {
@@ -247,7 +260,7 @@ class Simplex {
         for (let i = 0; i < maxRows; i++) {
             const row = system[i];
 
-            if (row[c] > 0) {
+            if (row[c] > FLOAT_ERROR) {
                 const strictness = row[1] / row[c];
 
                 if (strictness < strictest) {
