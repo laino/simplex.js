@@ -2,10 +2,11 @@ const Simplex = require('./simplex.js');
 
 s = new Simplex();
 
-s.addRangeConstraint(0, 5, 1, 0);
-s.addRangeConstraint(0, 5, 0, 1);
+s.addLowerConstraint(-10, 0, 1);
 
-console.log(s.maximum(1, 1));
+s.addUpperConstraint(10, 4, 5);
+
+console.log(s.maximum(5, -3));
 
 /*
 s = new Simplex();
